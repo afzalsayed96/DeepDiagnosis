@@ -1,17 +1,15 @@
 import tensorflow as tf, sys
-from flask import *
-
-# change this as you see fit
 
 
-def classify(filename, response=False):
+def classifySkinLesion(image_path):
+    """
+        Function to classify skin lesion images as benign or malignant
+    """
 
-    image_path = "./static/UPLOADFOLDER/"
-    image_path += filename
     # Read in the image_data
     image_data = tf.gfile.FastGFile(image_path, 'rb').read()
 
-    # Loads label file
+    # Loads label file, strips off carriage return
     label_lines = [line.rstrip() for line 
                        in tf.gfile.GFile("trained_nets_Mumbai_hackathon/ISIC_3/retrained_labels.txt")]
 
@@ -30,26 +28,23 @@ def classify(filename, response=False):
         
         # Sort to show labels of first prediction in order of confidence
         top_k = predictions[0].argsort()[-len(predictions[0]):][::-1]
-
-        benign_malignant = ''
-        maxi = 0
         
         for node_id in top_k:
             human_string = label_lines[node_id]
             score = predictions[0][node_id]
             print('%s (score = %.5f)' % (human_string, score))
-            if score > maxi:
-                benign_malignant = human_string
-                maxi = score
-    if response == True:
-        return Response(benign_malignant+" "+str(maxi), status=200, mimetype='application/json')
-    else:
-        return benign_malignant, maxi
 
-def classify_retino(filename, response=False):
-    image_path = "./static/UPLOADFOLDER/"
-    image_path += filename
-    print(image_path)
+
+
+def classifyDiabeticRetinopathy(image_path):
+    """
+        Function to classify images of retina based on sevirity of retinopathy
+        Severity Index:
+        0 - No Retinopathy detected
+        1 - Mild case of retinopathy
+        2 - Severe case of retinopathy 
+    """
+
     # Read in the image_data
     image_data = tf.gfile.FastGFile(image_path, 'rb').read()
 
@@ -72,18 +67,8 @@ def classify_retino(filename, response=False):
         
         # Sort to show labels of first prediction in order of confidence
         top_k = predictions[0].argsort()[-len(predictions[0]):][::-1]
-
-        category = ''
-        maxi = 0
         
         for node_id in top_k:
             human_string = label_lines[node_id]
             score = predictions[0][node_id]
             print('%s (score = %.5f)' % (human_string, score))
-            if score > maxi:
-                category = human_string
-                maxi = score
-    if response == True:
-        return Response(category+" "+str(maxi), status=200, mimetype='application/json')
-    else:
-        return category, maxi
